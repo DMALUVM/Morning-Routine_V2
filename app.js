@@ -6,7 +6,6 @@ const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 let tokenClient;
 let gapiInited = false;
 let gisInited = false;
-let backupFileId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const calendarEl = document.getElementById("calendar");
@@ -72,49 +71,37 @@ document.addEventListener("DOMContentLoaded", () => {
       calendarEl.appendChild(document.createElement("div"));
     }
 
-    let todayEl = null;
-
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const key = getDateKey(date);
+      const entry = data[key] || {};
+      const requiredComplete = requiredKeys.every(k => entry[k]);
+      const optionalCompleted = optionalKeys.filter(k => entry[k]).map(k => activities[k]);
+
       const dayEl = document.createElement("div");
       dayEl.className = "calendar-day";
 
       if (key === nowKey) {
         dayEl.classList.add("today");
-        todayEl = dayEl;
       }
 
-      if (key > nowKey) {
+      if (key > nowKey && !data[key]) {
         dayEl.innerHTML = `
           <div class="text-xs font-semibold">${day}</div>
           <div class="status-icon">--</div>
           <div class="badge-row"></div>
         `;
       } else {
-        const entry = data[key] || {};
-        const requiredComplete = requiredKeys.every(k => entry[k]);
-        const optionalCompleted = optionalKeys.filter(k => entry[k]).map(k => activities[k]);
-        const completed = requiredKeys.filter(k => entry[k]).length;
-        const progress = Math.round((completed / requiredKeys.length) * 100);
-
         dayEl.classList.add(requiredComplete ? "complete" : "incomplete");
         dayEl.innerHTML = `
           <div class="text-xs font-semibold">${day}</div>
           <div class="status-icon">${requiredComplete ? "✅" : "❌"}</div>
           <div class="badge-row">${optionalCompleted.join(" ")}</div>
-          <div class="progress-bar" style="width:${progress}%"></div>
         `;
       }
 
       dayEl.addEventListener("click", () => openEditModal(key));
       calendarEl.appendChild(dayEl);
-    }
-
-    if (todayEl) {
-      setTimeout(() => {
-        todayEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 100);
     }
 
     monthYearEl.textContent = `${firstDay.toLocaleString("default", { month: "long" })} ${year}`;
@@ -145,8 +132,8 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const [key, entry] of Object.entries(data)) {
       if (key.startsWith(thisYear)) {
         if (requiredKeys.every(k => entry[k])) ytd++;
-        if (entry.sauna) saunaCount++;
-        if (entry.cold) coldCount++;
+        if ('sauna' in entry && entry.sauna) saunaCount++;
+        if ('cold' in entry && entry.cold) coldCount++;
       }
     }
 
@@ -258,10 +245,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const result = await res.json();
       alert('✅ Backup complete to Google Drive!');
-      backupFileId = result.id;
     };
 
-    tokenClient.requestAccessToken();
+    tokenClient.requestAccessToken({ prompt: '' });
   });
 
   renderCalendar();
