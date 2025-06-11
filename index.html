@@ -6,6 +6,23 @@
   <title>Morning Routine Tracker</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Ensure calendar visible/scrollable on mobile */
+    #calendar {
+      min-height: 320px;
+      overflow-x: auto;
+    }
+    .calendar-day {
+      min-height: 80px;
+    }
+    /* Modal adjustments for mobile */
+    @media (max-width: 640px) {
+      #editModal > div {
+        width: 90%;
+        margin: 0 5%;
+      }
+    }
+  </style>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white">
   <div class="max-w-4xl mx-auto p-4">
