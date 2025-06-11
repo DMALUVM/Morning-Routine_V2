@@ -64,11 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const key = getDateKey(date);
-      const entry = data[key] || {};
-      const requiredComplete = requiredKeys.every(k => entry[k]);
-      const optionalCompleted = optionalKeys.filter(k => entry[k]).map(k => activities[k]);
-      const completed = requiredKeys.filter(k => entry[k]).length;
-      const progress = Math.round((completed / requiredKeys.length) * 100);
 
       const dayEl = document.createElement("div");
       dayEl.className = "calendar-day";
@@ -78,13 +73,19 @@ document.addEventListener("DOMContentLoaded", () => {
         todayEl = dayEl;
       }
 
-      if (key > nowKey && !data[key]) {
+      if (key > nowKey) {
         dayEl.innerHTML = `
           <div class="text-xs font-semibold">${day}</div>
           <div class="status-icon">--</div>
           <div class="badge-row"></div>
         `;
       } else {
+        const entry = data[key] || {};
+        const requiredComplete = requiredKeys.every(k => entry[k]);
+        const optionalCompleted = optionalKeys.filter(k => entry[k]).map(k => activities[k]);
+        const completed = requiredKeys.filter(k => entry[k]).length;
+        const progress = Math.round((completed / requiredKeys.length) * 100);
+
         dayEl.classList.add(requiredComplete ? "complete" : "incomplete");
         dayEl.innerHTML = `
           <div class="text-xs font-semibold">${day}</div>
@@ -217,4 +218,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderCalendar();
 });
-
