@@ -1,44 +1,33 @@
-body {
-  font-family: system-ui, sans-serif;
-}
+body { font-family: system-ui, sans-serif; }
 
 .calendar-day {
-  padding: 0.25rem;
-  min-height: 60px;
-  border: 1px solid #ddd;
-  border-radius: 0.375rem;
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
+  align-items: center;
+  justify-content: start;
+  padding-top: 4px;
+  border: 1px solid #ddd;
+  border-radius: .375rem;
   background-color: #fff;
 }
 
-.calendar-day:hover {
-  border-color: #60a5fa;
-}
+.calendar-day:hover { border-color: #60a5fa; }
+
+.cell-date { font-weight: bold; }
 
 .status-icon {
-  position: absolute;
-  top: 2px;
-  right: 4px;
-  font-size: 0.875rem;
+  margin-top: 6px;
+  font-size: 1.125rem;
 }
 
 .badge-row {
-  font-size: 0.875rem;
+  margin-top: auto;
+  margin-bottom: 4px;
 }
 
-.complete {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.incomplete {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
+.complete { background-color: #dcfce7; color: #166534; }
+.incomplete { background-color: #fee2e2; color: #991b1b; }
 
 .today {
   outline: 2px solid #3b82f6;
@@ -47,34 +36,24 @@ body {
   z-index: 1;
 }
 
-/* Always show calendar */
 #calendar {
   display: grid !important;
   min-height: 200px;
 }
 
-/* Prevent collapse */
-.calendar-day {
-  box-sizing: border-box;
-  min-width: 40px;
-}
+.calendar-day { box-sizing: border-box; min-width: 40px; }
 
-/* Make calendar horizontally scrollable on mobile */
 @media (max-width: 640px) {
   #calendar {
     overflow-x: scroll;
-    padding-bottom: 0.75rem;
+    padding-bottom: .75rem;
   }
   .calendar-day {
     min-width: 60px;
     min-height: 70px;
   }
-}
-
-/* Modal in mobile view */
-@media (max-width: 640px) {
   #editModal > div {
-    width: 100%;
+    width: 90%;
     margin: 0;
   }
 }
@@ -86,17 +65,9 @@ body {
     border-color: #374151;
     color: #f3f4f6;
   }
-  .calendar-day:hover {
-    border-color: #60a5fa;
-  }
-  .complete {
-    background-color: #14532d;
-    color: #bbf7d0;
-  }
-  .incomplete {
-    background-color: #7f1d1d;
-    color: #fecaca;
-  }
+  .calendar-day:hover { border-color: #60a5fa; }
+  .complete { background-color: #14532d; color: #bbf7d0; }
+  .incomplete { background-color: #7f1d1d; color: #fecaca; }
   .today {
     box-shadow: 0 0 0 3px #1f2937, 0 0 0 5px #3b82f6;
   }
