@@ -1,17 +1,6 @@
 /* Base layout and font */
 body {
   font-family: system-ui, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f9fafb;
-}
-
-/* Calendar grid layout */
-#calendar {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  margin-top: 1rem;
 }
 
 /* Calendar grid day styling */
@@ -26,14 +15,12 @@ body {
   justify-content: space-between;
   position: relative;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
+  transition: background-color 0.2s;
   background-color: #ffffff;
 }
 
 .calendar-day:hover {
   border-color: #3b82f6;
-  background-color: #f0f9ff;
-  transform: scale(1.02);
 }
 
 /* Icon in top-right */
@@ -68,17 +55,9 @@ body {
 .today {
   outline: 3px solid #3b82f6;
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px #ffffff, 0 0 10px 3px rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #3b82f6;
   z-index: 1;
   position: relative;
-}
-
-/* Progress bar inside day cell */
-.progress-bar {
-  height: 5px;
-  background-color: #3b82f6;
-  border-radius: 3px;
-  margin-top: 4px;
 }
 
 /* Modal visibility */
@@ -95,39 +74,25 @@ input[type="checkbox"]:checked + span {
   opacity: 0.6;
 }
 
-/* Responsive tweaks */
-@media (max-width: 768px) {
+/* Responsive fix: mobile */
+@media (max-width: 640px) {
   #calendar {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  #calendar {
-    grid-template-columns: repeat(3, 1fr);
+    overflow-x: auto;
+    min-height: 320px;
   }
 
   .calendar-day {
-    height: 90px;
-    padding: 0.4rem;
+    min-height: 80px;
   }
 
-  .status-icon {
-    font-size: 0.85rem;
-  }
-
-  .badge-row {
-    font-size: 0.85rem;
+  #editModal > div {
+    width: 90%;
+    margin: 0 auto;
   }
 }
 
-/* Dark mode support */
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #111827;
-    color: #f3f4f6;
-  }
-
   .calendar-day {
     border-color: #374151;
     background-color: #1f2937;
@@ -135,7 +100,6 @@ input[type="checkbox"]:checked + span {
 
   .calendar-day:hover {
     border-color: #60a5fa;
-    background-color: #111827;
   }
 
   .complete {
@@ -149,11 +113,6 @@ input[type="checkbox"]:checked + span {
   }
 
   .today {
-    box-shadow: 0 0 0 2px #1f2937, 0 0 10px 3px #60a5fa;
-  }
-
-  .progress-bar {
-    background-color: #60a5fa;
+    box-shadow: 0 0 0 2px #1f2937, 0 0 0 4px #3b82f6;
   }
 }
-
