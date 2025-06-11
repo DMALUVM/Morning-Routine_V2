@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Essential for mobile responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Morning Routine Tracker</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
@@ -21,19 +20,18 @@
     <div class="mb-4 p-3 border rounded-lg bg-white dark:bg-gray-800 shadow-sm">
       <h2 class="font-semibold mb-2">✅ Today's Checklist</h2>
       <form id="todayForm" class="grid grid-cols-2 gap-2 text-sm">
-        <label class="flex items-center space-x-1"><input type="checkbox" name="breathwork"/><span>🧘 Breathwork</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="hydration"/><span>💧 Hydration</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="reading"/><span>📖 Reading</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="mobility"/><span>🤸 Mobility</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="exercise"/><span>🏋️ Exercise</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="supplements"/><span>💊 Supplements</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="sauna"/><span>🔥 Sauna</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="cold"/><span>🧊 Cold</span></label>
+        <label class="flex items-center"><input type="checkbox" name="breathwork"/><span class="ml-1">🧘 Breath</span></label>
+        <label class="flex items-center"><input type="checkbox" name="hydration"/><span class="ml-1">💧 Hydration</span></label>
+        <label class="flex items-center"><input type="checkbox" name="reading"/><span class="ml-1">📖 Reading</span></label>
+        <label class="flex items-center"><input type="checkbox" name="mobility"/><span class="ml-1">🤸 Mobility</span></label>
+        <label class="flex items-center"><input type="checkbox" name="exercise"/><span class="ml-1">🏋️ Exercise</span></label>
+        <label class="flex items-center"><input type="checkbox" name="supplements"/><span class="ml-1">💊 Supplements</span></label>
+        <label class="flex items-center"><input type="checkbox" name="sauna"/><span class="ml-1">🔥 Sauna</span></label>
+        <label class="flex items-center"><input type="checkbox" name="cold"/><span class="ml-1">🧊 Cold</span></label>
         <button type="submit" class="col-span-2 bg-blue-500 text-white rounded py-1 mt-2">Save</button>
       </form>
     </div>
 
-    <!-- Responsive calendar -->
     <div id="calendar" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1 text-xs"></div>
   </div>
 
@@ -41,14 +39,14 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-5/6 max-w-sm">
       <h3 class="text-lg font-semibold mb-2 text-center">Edit Day</h3>
       <form id="editForm" class="grid gap-2 text-sm">
-        <label class="flex items-center space-x-1"><input type="checkbox" name="breathwork"/><span>🧘 Breathwork</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="hydration"/><span>💧 Hydration</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="reading"/><span>📖 Reading</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="mobility"/><span>🤸 Mobility</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="exercise"/><span>🏋️ Exercise</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="supplements"/><span>💊 Supplements</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="sauna"/><span>🔥 Sauna</span></label>
-        <label class="flex items-center space-x-1"><input type="checkbox" name="cold"/><span>🧊 Cold</span></label>
+        <label class="flex items-center"><input type="checkbox" name="breathwork"/><span class="ml-1">🧘 Breath</span></label>
+        <label class="flex items-center"><input type="checkbox" name="hydration"/><span class="ml-1">💧 Hydration</span></label>
+        <label class="flex items-center"><input type="checkbox" name="reading"/><span class="ml-1">📖 Reading</span></label>
+        <label class="flex items-center"><input type="checkbox" name="mobility"/><span class="ml-1">🤸 Mobility</span></label>
+        <label class="flex items-center"><input type="checkbox" name="exercise"/><span class="ml-1">🏋️ Exercise</span></label>
+        <label class="flex items-center"><input type="checkbox" name="supplements"/><span class="ml-1">💊 Supplements</span></label>
+        <label class="flex items-center"><input type="checkbox" name="sauna"/><span class="ml-1">🔥 Sauna</span></label>
+        <label class="flex items-center"><input type="checkbox" name="cold"/><span class="ml-1">🧊 Cold</span></label>
         <div class="flex justify-between mt-3">
           <button type="button" id="cancelEdit" class="text-gray-600 dark:text-gray-300">Cancel</button>
           <button type="submit" class="bg-blue-500 text-white rounded px-3 py-1">Save</button>
