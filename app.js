@@ -17,8 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
     mobility: "🤸", exercise: "🏋️", supplements: "💊",
     sauna: "🔥", cold: "🧊"
   };
-  const required = ["breathwork","hydration","reading","mobility","exercise","supplements"];
-  const optional = ["sauna","cold"];
+  const required = ["breathwork", "hydration", "reading", "mobility", "exercise", "supplements"];
+  const optional = ["sauna", "cold"];
 
   function getLocalDate(d = new Date()) {
     return new Date(d.toLocaleString("en-US", { timeZone: "America/New_York" }));
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return getLocalDate(d).toISOString().split("T")[0];
   }
 
-  function renderCalendar(){
+  function renderCalendar() {
     cal.innerHTML = "";
     const now = getLocalDate(), nowKey = getKey(now);
     const year = now.getFullYear(), month = now.getMonth();
@@ -36,42 +36,39 @@ document.addEventListener("DOMContentLoaded", () => {
           startDay = firstDay.getDay(),
           dim = new Date(year, month + 1, 0).getDate();
 
-    // Weekday labels
-    ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(wday => {
+    ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(wday => {
       const hd = document.createElement("div");
       hd.textContent = wday;
       hd.className = "font-bold text-xs";
       cal.appendChild(hd);
     });
 
-    // Empty grid cells until first day
-    for(let i = 0; i < startDay; i++){
+    for (let i = 0; i < startDay; i++) {
       cal.appendChild(document.createElement("div"));
     }
 
     let todayEl;
-    for(let d = 1; d <= dim; d++){
+    for (let d = 1; d <= dim; d++) {
       const date = new Date(year, month, d),
             key = getKey(date),
             entry = data[key] || {},
             dayEl = document.createElement("div");
-      dayEl.className = "calendar-day";
 
-      if(key === nowKey){
+      dayEl.className = "calendar-day";
+      if (key === nowKey) {
         dayEl.classList.add("today");
         todayEl = dayEl;
       }
 
-      // Date number
       const cellDate = document.createElement("div");
       cellDate.textContent = d;
       cellDate.className = "cell-date";
       dayEl.appendChild(cellDate);
 
-      // Status icon
       const st = document.createElement("div");
       st.className = "status-icon";
-      if(date > now){
+
+      if (date > now) {
         st.textContent = "--";
       } else {
         const ok = required.every(k => entry[k]);
@@ -80,24 +77,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       dayEl.appendChild(st);
 
-      // Optional badges
       const br = document.createElement("div");
       br.className = "badge-row";
       optional.forEach(k => {
-        if(entry[k]) br.textContent += activities[k];
+        if (entry[k]) br.textContent += activities[k];
       });
       dayEl.appendChild(br);
 
-      // Click handler to edit day
       dayEl.onclick = () => {
         Object.values(editForm.elements)
           .filter(el => el.name)
           .forEach(el => el.checked = !!entry[el.name]);
-        
+
         editForm.onsubmit = e => {
           e.preventDefault();
-          const fd = new FormData(editForm),
-                newEntry = {};
+          const fd = new FormData(editForm), newEntry = {};
           Object.keys(activities).forEach(k => {
             newEntry[k] = fd.get(k) === "on";
           });
@@ -112,42 +106,38 @@ document.addEventListener("DOMContentLoaded", () => {
       cal.appendChild(dayEl);
     }
 
-    if(todayEl) {
+    if (todayEl) {
       setTimeout(() => {
-        todayEl.scrollIntoView({ behavior:"smooth", block:"center" });
+        todayEl.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 50);
     }
-    monthYearEl.textContent = firstDay.toLocaleString("default", { month:"long", year:"numeric" });
+    monthYearEl.textContent = firstDay.toLocaleString("default", { month: "long", year: "numeric" });
     updateStats();
   }
 
-  function updateStats(){
+  function updateStats() {
     const now = getLocalDate(),
           yearStr = now.getFullYear().toString();
 
     let streak = 0, ytd = 0, saunaCount = 0, coldCount = 0;
 
-    // Calculate streak up to today
-    let cur = new Date(now);
-    while(true) {
+    let cur = new Date(getLocalDate());
+    for (;;) {
       const key = getKey(cur),
             entry = data[key];
-      if(entry && required.every(k => entry[k])) {
+      if (entry && required.every(k => entry[k])) {
         streak++;
-        cur.setDate(cur.getDate() - 1);
+        cur = new Date(cur.setDate(cur.getDate() - 1));
       } else {
         break;
       }
     }
 
-    // Calculate yearly totals
     Object.entries(data).forEach(([k, entry]) => {
-      if(k.startsWith(yearStr)) {
-        if(required.every(x => entry[x])){
-          ytd++;
-        }
-        if(entry.sauna) saunaCount++;
-        if(entry.cold) coldCount++;
+      if (k.startsWith(yearStr)) {
+        if (required.every(x => entry[x])) ytd++;
+        if (entry.sauna) saunaCount++;
+        if (entry.cold) coldCount++;
       }
     });
 
@@ -156,6 +146,18 @@ document.addEventListener("DOMContentLoaded", () => {
     saunaYtdEl.textContent = `🔥 Sauna YTD: ${saunaCount}`;
     coldYtdEl.textContent = `🧊 Cold YTD: ${coldCount}`;
   }
+
+  todayForm.onsubmit = e => {
+    e.preventDefault();
+    const fd = new FormData(todayForm), newEntry = {};
+    Object.keys(activities).forEach(k => {
+      newEntry[k] = fd.get(k) === "on";
+    });
+    const todayKey = getKey();
+    data[todayKey] = newEntry;
+    localStorage.setItem("routineData", JSON.stringify(data));
+    renderCalendar();
+  };
 
   cancelEdit.onclick = () => editModal.classList.add("hidden");
 
