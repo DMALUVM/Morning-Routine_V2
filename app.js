@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const calendarEl = document.getElementById("calendar");
+  const cal = document.getElementById("calendar");
   const monthYearEl = document.getElementById("monthYear");
   const streakEl = document.getElementById("streak");
   const ytdEl = document.getElementById("ytd");
@@ -17,113 +17,103 @@ document.addEventListener("DOMContentLoaded", () => {
     mobility: "🤸", exercise: "🏋️", supplements: "💊",
     sauna: "🔥", cold: "🧊"
   };
-  const requiredKeys = ["breathwork","hydration","reading","mobility","exercise","supplements"];
-  const optionalKeys = ["sauna","cold"];
+  const required = ["breathwork","hydration","reading","mobility","exercise","supplements"];
+  const optional = ["sauna","cold"];
 
   function getLocalDate(d=new Date()){ return new Date(d.toLocaleString("en-US",{timeZone:"America/New_York"})); }
-  function getDateKey(d=new Date()){ return getLocalDate(d).toISOString().split("T")[0]; }
+  function getKey(d=new Date()){ return getLocalDate(d).toISOString().split("T")[0]; }
 
-  function renderCalendar() {
-    calendarEl.innerHTML = "";
-    const now = getLocalDate();
-    const nowKey = getDateKey(now);
-    const year = now.getFullYear(), month = now.getMonth();
-    const firstDay = new Date(year, month, 1), startDay = firstDay.getDay();
-    const daysInMonth = new Date(year, month+1, 0).getDate();
+  function renderCalendar(){
+    cal.innerHTML = "";
+    const now = getLocalDate(), nowKey = getKey(now);
+    const y = now.getFullYear(), m = now.getMonth();
+    const fd = new Date(y,m,1), sd = fd.getDay(), dim = new Date(y,m+1,0).getDate();
 
-    ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(day => {
+    ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(w=>{
       const h = document.createElement("div");
+      h.textContent = w;
       h.className = "font-bold text-xs";
-      h.textContent = day;
-      calendarEl.appendChild(h);
+      cal.appendChild(h);
     });
+    for(let i=0;i<sd;i++) cal.appendChild(document.createElement("div"));
 
-    for (let i=0; i<startDay; i++) calendarEl.appendChild(document.createElement("div"));
-
-    let todayEl = null;
-    for (let d=1; d<=daysInMonth; d++) {
-      const date = new Date(year, month, d);
-      const key = getDateKey(date);
-      const entry = data[key] || {};
+    let todayEl;
+    for(let d=1; d<=dim; d++){
+      const date = new Date(y,m,d), key = getKey(date);
+      const entry = data[key]||{};
       const dayEl = document.createElement("div");
       dayEl.className = "calendar-day";
 
-      if (key === nowKey) { dayEl.classList.add("today"); todayEl = dayEl; }
-
-      const dateDiv = document.createElement("div");
-      dateDiv.textContent = d;
-      dateDiv.className = "cell-date";
-      dayEl.appendChild(dateDiv);
-
-      const statusDiv = document.createElement("div");
-      statusDiv.className = "status-icon";
-      if (date > now) {
-        statusDiv.textContent = "--";
-      } else {
-        const completeReq = requiredKeys.every(k=>entry[k]);
-        statusDiv.textContent = completeReq ? "✅" : "❌";
-        dayEl.classList.add(completeReq ? "complete" : "incomplete");
+      if(key===nowKey){
+        dayEl.classList.add("today");
+        todayEl = dayEl;
       }
-      dayEl.appendChild(statusDiv);
 
-      const badgeRow = document.createElement("div");
-      badgeRow.className = "badge-row";
-      optionalKeys.filter(k=>entry[k]).forEach(k=>{
-        badgeRow.textContent += activities[k];
-      });
-      dayEl.appendChild(badgeRow);
+      const dt = document.createElement("div");
+      dt.textContent = d;
+      dt.className = "cell-date";
+      dayEl.appendChild(dt);
 
-      dayEl.addEventListener("click",()=>{
-        for(const el of editForm.elements){
-          if(el.name) el.checked = !!entry[el.name];
-        }
-        editForm.onsubmit = e=>{
+      const st = document.createElement("div");
+      st.className = "status-icon";
+      if(date>now) st.textContent="--";
+      else {
+        const ok = required.every(a=>entry[a]);
+        st.textContent = ok?"✅":"❌";
+        dayEl.classList.add(ok?"complete":"incomplete");
+      }      
+      dayEl.appendChild(st);
+
+      const br = document.createElement("div");
+      br.className = "badge-row";
+      optional.forEach(a=>{ if(entry[a]) br.textContent += activities[a]; });
+      dayEl.appendChild(br);
+
+      dayEl.onclick = () => {
+        for(const el of editForm.elements) if(el.name) el.checked = !!entry[el.name];
+        editForm.onsubmit = e => {
           e.preventDefault();
-          const fd = new FormData(editForm);
-          const newEntry = {};
-          Object.keys(activities).forEach(k=> newEntry[k] = fd.get(k)==="on");
-          data[key] = newEntry;
-          localStorage.setItem("routineData",JSON.stringify(data));
+          const fd = new FormData(editForm), nn = {};
+          Object.keys(activities).forEach(k=>nn[k] = fd.get(k)==="on");
+          data[key] = nn;
+          localStorage.setItem("routineData", JSON.stringify(data));
           renderCalendar();
-          closeModal();
+          editModal.classList.add("hidden");
         };
         editModal.classList.remove("hidden");
-      });
+      };
 
-      calendarEl.appendChild(dayEl);
+      cal.appendChild(dayEl);
     }
 
-    if (todayEl) setTimeout(()=> todayEl.scrollIntoView({behavior:"smooth", block:"center"}),50);
-    monthYearEl.textContent = firstDay.toLocaleString("default",{month:"long", year:"numeric"});
+    if(todayEl) setTimeout(()=>todayEl.scrollIntoView({ behavior:"smooth", block:"center" }), 50);
+    monthYearEl.textContent = fd.toLocaleString("default",{ month:"long", year:"numeric" });
     updateStats();
   }
 
   function updateStats(){
-    const now=getLocalDate(), ys=now.getFullYear().toString();
-    let streak=0,ytd=0,sc=0,cc=0;
-    let cur=new Date(now);
-    const requiredDaily=entry=>requiredKeys.every(k=>entry[k]);
+    const now = getLocalDate(), ys = now.getFullYear().toString();
+    let streak = 0, ytd = 0, sa=0, co=0;
+    const cur = new Date(now);
+    const okReq = e => required.every(a=>e[a]);
     while(true){
-      const key=getDateKey(cur), e=data[key];
-      if(e && requiredDaily(e)) {streak++; cur.setDate(cur.getDate()-1);}
+      const e = data[getKey(cur)];
+      if(e && okReq(e)){ streak++; cur.setDate(cur.getDate()-1); }
       else break;
     }
-    Object.values(data).forEach(e=>{
-      const keyYear = Object.keys(e)[0];
-      if(keyYear && keyYear.startsWith(ys) && requiredDaily(e)) {
+    Object.entries(data).forEach(([k,e])=>{
+      if(k.startsWith(ys) && okReq(e)){
         ytd++;
-        if(e.sauna) sc++;
-        if(e.cold) cc++;
+        if(e.sauna) sa++;
+        if(e.cold) co++;
       }
     });
-    streakEl.textContent=`🔥 Streak: ${streak} day${streak!==1?'s':''}`;
-    ytdEl.textContent=`📆 YTD: ${ytd} day${ytd!==1?'s':''}`;
-    saunaYtdEl.textContent=`🔥 Sauna YTD: ${sc}`;
-    coldYtdEl.textContent=`🧊 Cold YTD: ${cc}`;
+    streakEl.textContent = `🔥 Streak: ${streak} day${streak!==1?'s':''}`;
+    ytdEl.textContent = `📆 YTD: ${ytd} day${ytd!==1?'s':''}`;
+    saunaYtdEl.textContent = `🔥 Sauna YTD: ${sa}`;
+    coldYtdEl.textContent = `🧊 Cold YTD: ${co}`;
   }
 
-  cancelEdit.addEventListener("click", closeModal);
-  function closeModal(){ editModal.classList.add("hidden"); }
-
+  cancelEdit.onclick = () => editModal.classList.add("hidden");
   renderCalendar();
 });
