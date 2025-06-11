@@ -1,1 +1,159 @@
+/* Base layout and font */
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9fafb;
+}
+
+/* Calendar grid layout */
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 1rem;
+}
+
+/* Calendar grid day styling */
+.calendar-day {
+  width: 100%;
+  padding: 0.5rem;
+  height: 100px;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  background-color: #ffffff;
+}
+
+.calendar-day:hover {
+  border-color: #3b82f6;
+  background-color: #f0f9ff;
+  transform: scale(1.02);
+}
+
+/* Icon in top-right */
+.status-icon {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 1rem;
+}
+
+/* Optional emoji badges */
+.badge-row {
+  font-size: 1rem;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+/* Completed/incomplete coloring */
+.complete {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.incomplete {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Highlight today's cell */
+.today {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 10px 3px rgba(59, 130, 246, 0.6);
+  z-index: 1;
+  position: relative;
+}
+
+/* Progress bar inside day cell */
+.progress-bar {
+  height: 5px;
+  background-color: #3b82f6;
+  border-radius: 3px;
+  margin-top: 4px;
+}
+
+/* Modal visibility */
+#editModal {
+  display: none;
+}
+#editModal.show {
+  display: flex;
+}
+
+/* Strike-through for completed */
+input[type="checkbox"]:checked + span {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  #calendar {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  #calendar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .calendar-day {
+    height: 90px;
+    padding: 0.4rem;
+  }
+
+  .status-icon {
+    font-size: 0.85rem;
+  }
+
+  .badge-row {
+    font-size: 0.85rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #111827;
+    color: #f3f4f6;
+  }
+
+  .calendar-day {
+    border-color: #374151;
+    background-color: #1f2937;
+  }
+
+  .calendar-day:hover {
+    border-color: #60a5fa;
+    background-color: #111827;
+  }
+
+  .complete {
+    background-color: #14532d;
+    color: #bbf7d0;
+  }
+
+  .incomplete {
+    background-color: #7f1d1d;
+    color: #fecaca;
+  }
+
+  .today {
+    box-shadow: 0 0 0 2px #1f2937, 0 0 10px 3px #60a5fa;
+  }
+
+  .progress-bar {
+    background-color: #60a5fa;
+  }
+}
 
