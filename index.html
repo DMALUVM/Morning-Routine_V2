@@ -2,80 +2,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- Essential for mobile responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Morning Routine Tracker</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    /* Ensure calendar visible/scrollable on mobile */
-    #calendar {
-      min-height: 320px;
-      overflow-x: auto;
-    }
-    .calendar-day {
-      min-height: 80px;
-    }
-    /* Modal adjustments for mobile */
-    @media (max-width: 640px) {
-      #editModal > div {
-        width: 90%;
-        margin: 0 5%;
-      }
-    }
-  </style>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white">
-  <div class="max-w-4xl mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4 text-center">🌅 Morning Routine Tracker</h1>
-    <div class="flex justify-between items-center mb-4">
-      <div>
-        <p id="streak" class="text-sm">🔥 Streak: 0 days</p>
-        <p id="ytd" class="text-sm">📆 YTD: 0 days</p>
-        <p id="saunaYTD" class="text-sm">🔥 Sauna YTD: 0</p>
-        <p id="coldYTD" class="text-sm">🧊 Cold Plunge YTD: 0</p>
-      </div>
-      <div class="flex items-center space-x-4">
-        <button id="prevMonth" class="text-blue-500 hover:underline">← Prev</button>
-        <h2 id="monthYear" class="font-semibold text-lg"></h2>
-        <button id="nextMonth" class="text-blue-500 hover:underline">Next →</button>
-      </div>
+  <div class="max-w-md mx-auto p-4">
+    <h1 class="text-xl font-bold mb-3 text-center">🌅 Morning Routine</h1>
+    <div class="space-y-2 mb-4">
+      <p id="streak" class="text-sm">🔥 Streak: 0 days</p>
+      <p id="ytd" class="text-sm">📆 YTD: 0 days</p>
+      <p id="saunaYTD" class="text-sm">🔥 Sauna YTD: 0</p>
+      <p id="coldYTD" class="text-sm">🧊 Cold YTD: 0</p>
     </div>
 
-    <div class="mb-6 p-4 border rounded-lg bg-white dark:bg-gray-800 shadow">
-      <h2 class="text-lg font-semibold mb-2">✅ Today’s Checklist</h2>
-      <form id="todayForm" class="grid gap-2">
-        <label class="flex items-center space-x-2"><input type="checkbox" name="breathwork" /><span>🧘 Breathwork</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="hydration" /><span>💧 Hydration</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="reading" /><span>📖 Reading</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="mobility" /><span>🤸 Mobility</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="exercise" /><span>🏋️ Exercise</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="supplements" /><span>💊 Supplements</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="sauna" /><span>🔥 Sauna</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="cold" /><span>🧊 Cold Plunge</span></label>
-        <div class="flex justify-end mt-3">
-          <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Save Today</button>
-        </div>
+    <div class="mb-4 p-3 border rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+      <h2 class="font-semibold mb-2">✅ Today's Checklist</h2>
+      <form id="todayForm" class="grid grid-cols-2 gap-2 text-sm">
+        <label class="flex items-center space-x-1"><input type="checkbox" name="breathwork"/><span>🧘 Breathwork</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="hydration"/><span>💧 Hydration</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="reading"/><span>📖 Reading</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="mobility"/><span>🤸 Mobility</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="exercise"/><span>🏋️ Exercise</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="supplements"/><span>💊 Supplements</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="sauna"/><span>🔥 Sauna</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="cold"/><span>🧊 Cold</span></label>
+        <button type="submit" class="col-span-2 bg-blue-500 text-white rounded py-1 mt-2">Save</button>
       </form>
     </div>
 
-    <div id="calendar" class="grid grid-cols-7 gap-2 text-center text-sm"></div>
+    <!-- Responsive calendar -->
+    <div id="calendar" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1 text-xs"></div>
   </div>
 
   <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 w-80">
-      <h3 class="text-lg font-bold mb-2 text-center">Edit Day</h3>
-      <form id="editForm" class="grid gap-2">
-        <label class="flex items-center space-x-2"><input type="checkbox" name="breathwork" /><span>🧘 Breathwork</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="hydration" /><span>💧 Hydration</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="reading" /><span>📖 Reading</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="mobility" /><span>🤸 Mobility</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="exercise" /><span>🏋️ Exercise</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="supplements" /><span>💊 Supplements</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="sauna" /><span>🔥 Sauna</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="cold" /><span>🧊 Cold Plunge</span></label>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-5/6 max-w-sm">
+      <h3 class="text-lg font-semibold mb-2 text-center">Edit Day</h3>
+      <form id="editForm" class="grid gap-2 text-sm">
+        <label class="flex items-center space-x-1"><input type="checkbox" name="breathwork"/><span>🧘 Breathwork</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="hydration"/><span>💧 Hydration</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="reading"/><span>📖 Reading</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="mobility"/><span>🤸 Mobility</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="exercise"/><span>🏋️ Exercise</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="supplements"/><span>💊 Supplements</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="sauna"/><span>🔥 Sauna</span></label>
+        <label class="flex items-center space-x-1"><input type="checkbox" name="cold"/><span>🧊 Cold</span></label>
         <div class="flex justify-between mt-3">
-          <button type="button" id="cancelEdit" class="text-sm text-gray-600 dark:text-gray-300">Cancel</button>
-          <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Save</button>
+          <button type="button" id="cancelEdit" class="text-gray-600 dark:text-gray-300">Cancel</button>
+          <button type="submit" class="bg-blue-500 text-white rounded px-3 py-1">Save</button>
         </div>
       </form>
     </div>
