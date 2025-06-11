@@ -1,165 +1,220 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const cal = document.getElementById("calendar"),
-        monthYearEl = document.getElementById("monthYear"),
-        streakEl = document.getElementById("streak"),
-        ytdEl = document.getElementById("ytd"),
-        saunaYtdEl = document.getElementById("saunaYTD"),
-        coldYtdEl = document.getElementById("coldYTD"),
-        todayForm = document.getElementById("todayForm"),
-        editForm = document.getElementById("editForm"),
-        cancelEdit = document.getElementById("cancelEdit"),
-        editModal = document.getElementById("editModal");
+  const calendarEl = document.getElementById("calendar");
+  const monthYearEl = document.getElementById("monthYear");
+  const streakEl = document.getElementById("streak");
+  const ytdEl = document.getElementById("ytd");
 
+  const editModal = document.getElementById("editModal");
+  const editForm = document.getElementById("editForm");
+  const todayForm = document.getElementById("todayForm");
+  const cancelEdit = document.getElementById("cancelEdit");
+
+  let selectedDate = null;
+  let currentDate = new Date();
   let data = JSON.parse(localStorage.getItem("routineData") || "{}");
 
   const activities = {
-    breathwork: "🧘", hydration: "💧", reading: "📖",
-    mobility: "🤸", exercise: "🏋️", supplements: "💊",
-    sauna: "🔥", cold: "🧊"
+    breathwork: "🧘",
+    hydration: "💧",
+    reading: "📖",
+    mobility: "🤸",
+    exercise: "🏋️",
+    supplements: "💊",
+    sauna: "🔥",
+    cold: "🧊",
   };
-  const required = ["breathwork", "hydration", "reading", "mobility", "exercise", "supplements"];
-  const optional = ["sauna", "cold"];
 
-  function getLocalDate(d = new Date()) {
-    return new Date(d.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  const requiredKeys = ["breathwork", "hydration", "reading", "mobility", "exercise", "supplements"];
+  const optionalKeys = ["sauna", "cold"];
+
+  function getLocalDate(date = new Date()) {
+    return new Date(date.toLocaleString("en-US", { timeZone: "America/New_York" }));
   }
 
-  function getKey(d = new Date()) {
-    return getLocalDate(d).toISOString().split("T")[0];
+  function getDateKey(date) {
+    return getLocalDate(date).toISOString().split("T")[0];
   }
 
   function renderCalendar() {
-    cal.innerHTML = "";
-    const now = getLocalDate(), nowKey = getKey(now);
-    const year = now.getFullYear(), month = now.getMonth();
-    const firstDay = new Date(year, month, 1),
-          startDay = firstDay.getDay(),
-          dim = new Date(year, month + 1, 0).getDate();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const now = getLocalDate();
+    const nowKey = getDateKey(now);
 
-    ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(wday => {
-      const hd = document.createElement("div");
-      hd.textContent = wday;
-      hd.className = "font-bold text-xs";
-      cal.appendChild(hd);
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+
+    calendarEl.innerHTML = "";
+
+    ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(day => {
+      const header = document.createElement("div");
+      header.className = "font-bold";
+      header.textContent = day;
+      calendarEl.appendChild(header);
     });
 
     for (let i = 0; i < startDay; i++) {
-      cal.appendChild(document.createElement("div"));
+      calendarEl.appendChild(document.createElement("div"));
     }
 
-    let todayEl;
-    for (let d = 1; d <= dim; d++) {
-      const date = new Date(year, month, d),
-            key = getKey(date),
-            entry = data[key] || {},
-            dayEl = document.createElement("div");
+    let todayEl = null;
 
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const key = getDateKey(date);
+
+      const dayEl = document.createElement("div");
       dayEl.className = "calendar-day";
+
       if (key === nowKey) {
         dayEl.classList.add("today");
         todayEl = dayEl;
       }
 
-      const cellDate = document.createElement("div");
-      cellDate.textContent = d;
-      cellDate.className = "cell-date";
-      dayEl.appendChild(cellDate);
-
-      const st = document.createElement("div");
-      st.className = "status-icon";
-
-      if (date > now) {
-        st.textContent = "--";
+      if (key > nowKey) {
+        dayEl.innerHTML = `
+          <div class="text-xs font-semibold">${day}</div>
+          <div class="status-icon">--</div>
+          <div class="badge-row"></div>
+        `;
       } else {
-        const ok = required.every(k => entry[k]);
-        st.textContent = ok ? "✅" : "❌";
-        dayEl.classList.add(ok ? "complete" : "incomplete");
+        const entry = data[key] || {};
+        const requiredComplete = requiredKeys.every(k => entry[k]);
+        const optionalCompleted = optionalKeys.filter(k => entry[k]).map(k => activities[k]);
+        const completed = requiredKeys.filter(k => entry[k]).length;
+        const progress = Math.round((completed / requiredKeys.length) * 100);
+
+        dayEl.classList.add(requiredComplete ? "complete" : "incomplete");
+        dayEl.innerHTML = `
+          <div class="text-xs font-semibold">${day}</div>
+          <div class="status-icon">${requiredComplete ? "✅" : "❌"}</div>
+          <div class="badge-row">${optionalCompleted.join(" ")}</div>
+          <div class="progress-bar" style="width:${progress}%"></div>
+        `;
       }
-      dayEl.appendChild(st);
 
-      const br = document.createElement("div");
-      br.className = "badge-row";
-      optional.forEach(k => {
-        if (entry[k]) br.textContent += activities[k];
-      });
-      dayEl.appendChild(br);
-
-      dayEl.onclick = () => {
-        Object.values(editForm.elements)
-          .filter(el => el.name)
-          .forEach(el => el.checked = !!entry[el.name]);
-
-        editForm.onsubmit = e => {
-          e.preventDefault();
-          const fd = new FormData(editForm), newEntry = {};
-          Object.keys(activities).forEach(k => {
-            newEntry[k] = fd.get(k) === "on";
-          });
-          data[key] = newEntry;
-          localStorage.setItem("routineData", JSON.stringify(data));
-          renderCalendar();
-          editModal.classList.add("hidden");
-        };
-        editModal.classList.remove("hidden");
-      };
-
-      cal.appendChild(dayEl);
+      dayEl.addEventListener("click", () => openEditModal(key));
+      calendarEl.appendChild(dayEl);
     }
 
     if (todayEl) {
       setTimeout(() => {
         todayEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 50);
+      }, 100);
     }
-    monthYearEl.textContent = firstDay.toLocaleString("default", { month: "long", year: "numeric" });
+
+    monthYearEl.textContent = `${firstDay.toLocaleString("default", { month: "long" })} ${year}`;
     updateStats();
+    updateTodayForm();
   }
 
   function updateStats() {
-    const now = getLocalDate(),
-          yearStr = now.getFullYear().toString();
+    let streak = 0;
+    let ytd = 0;
+    let current = getLocalDate();
 
-    let streak = 0, ytd = 0, saunaCount = 0, coldCount = 0;
-
-    let cur = new Date(getLocalDate());
-    for (;;) {
-      const key = getKey(cur),
-            entry = data[key];
-      if (entry && required.every(k => entry[k])) {
+    while (true) {
+      const key = getDateKey(current);
+      const entry = data[key];
+      const ok = entry && requiredKeys.every(k => entry[k]);
+      if (ok) {
         streak++;
-        cur = new Date(cur.setDate(cur.getDate() - 1));
+        current.setDate(current.getDate() - 1);
       } else {
         break;
       }
     }
 
-    Object.entries(data).forEach(([k, entry]) => {
-      if (k.startsWith(yearStr)) {
-        if (required.every(x => entry[x])) ytd++;
-        if (entry.sauna) saunaCount++;
-        if (entry.cold) coldCount++;
+    for (const [key, entry] of Object.entries(data)) {
+      if (key.startsWith(getLocalDate().getFullYear().toString()) && requiredKeys.every(k => entry[k])) {
+        ytd++;
       }
-    });
+    }
 
-    streakEl.textContent = `🔥 Streak: ${streak} day${streak !== 1 ? "s" : ""}`;
-    ytdEl.textContent = `📆 YTD: ${ytd} day${ytd !== 1 ? "s" : ""}`;
-    saunaYtdEl.textContent = `🔥 Sauna YTD: ${saunaCount}`;
-    coldYtdEl.textContent = `🧊 Cold YTD: ${coldCount}`;
+    streakEl.textContent = `🔥 Streak: ${streak} day${streak === 1 ? "" : "s"}`;
+    ytdEl.textContent = `📆 YTD: ${ytd} day${ytd === 1 ? "" : "s"}`;
   }
 
-  todayForm.onsubmit = e => {
-    e.preventDefault();
-    const fd = new FormData(todayForm), newEntry = {};
-    Object.keys(activities).forEach(k => {
-      newEntry[k] = fd.get(k) === "on";
-    });
-    const todayKey = getKey();
-    data[todayKey] = newEntry;
-    localStorage.setItem("routineData", JSON.stringify(data));
-    renderCalendar();
-  };
+  function updateTodayForm() {
+    const todayKey = getDateKey(getLocalDate());
+    const lastCheckedKey = localStorage.getItem("lastCheckedDate") || "";
 
-  cancelEdit.onclick = () => editModal.classList.add("hidden");
+    if (lastCheckedKey !== todayKey) {
+      for (const el of todayForm.elements) {
+        if (el.type === "checkbox") el.checked = false;
+      }
+      localStorage.setItem("lastCheckedDate", todayKey);
+    } else {
+      const entry = data[todayKey] || {};
+      for (const el of todayForm.elements) {
+        if (el.type === "checkbox") {
+          el.checked = !!entry[el.name];
+        }
+      }
+    }
+  }
+
+  todayForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const formData = new FormData(todayForm);
+    const result = {};
+    for (const key of Object.keys(activities)) {
+      result[key] = formData.get(key) === "on";
+    }
+
+    const todayKey = getDateKey(getLocalDate());
+    data[todayKey] = result;
+    localStorage.setItem("routineData", JSON.stringify(data));
+    localStorage.setItem("lastCheckedDate", todayKey);
+    renderCalendar();
+  });
+
+  function openEditModal(dateKey) {
+    selectedDate = dateKey;
+    const entry = data[dateKey] || {};
+
+    for (const el of editForm.elements) {
+      if (el.type === "checkbox") {
+        el.checked = !!entry[el.name];
+      }
+    }
+
+    editModal.classList.add("show");
+    editModal.classList.remove("hidden");
+  }
+
+  editForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const formData = new FormData(editForm);
+    const result = {};
+    for (const key of Object.keys(activities)) {
+      result[key] = formData.get(key) === "on";
+    }
+
+    data[selectedDate] = result;
+    localStorage.setItem("routineData", JSON.stringify(data));
+    closeModal();
+    renderCalendar();
+  });
+
+  cancelEdit.addEventListener("click", closeModal);
+
+  function closeModal() {
+    editModal.classList.remove("show");
+    editModal.classList.add("hidden");
+  }
+
+  document.getElementById("prevMonth").addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+  });
+
+  document.getElementById("nextMonth").addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+  });
 
   renderCalendar();
 });
