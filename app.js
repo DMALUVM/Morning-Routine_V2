@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const monthYearEl = document.getElementById("monthYear");
   const streakEl = document.getElementById("streak");
   const ytdEl = document.getElementById("ytd");
+  const saunaYtdEl = document.getElementById("saunaYTD");
+  const coldYtdEl = document.getElementById("coldYTD");
 
   const editModal = document.getElementById("editModal");
   const editForm = document.getElementById("editForm");
@@ -123,7 +125,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateStats() {
     let streak = 0;
     let ytd = 0;
+    let saunaCount = 0;
+    let coldCount = 0;
     let current = getLocalDate();
+    const thisYear = current.getFullYear().toString();
 
     while (true) {
       const key = getDateKey(current);
@@ -138,13 +143,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     for (const [key, entry] of Object.entries(data)) {
-      if (key.startsWith(getLocalDate().getFullYear().toString()) && requiredKeys.every(k => entry[k])) {
-        ytd++;
+      if (key.startsWith(thisYear)) {
+        if (requiredKeys.every(k => entry[k])) ytd++;
+        if (entry.sauna) saunaCount++;
+        if (entry.cold) coldCount++;
       }
     }
 
     streakEl.textContent = `🔥 Streak: ${streak} day${streak === 1 ? "" : "s"}`;
     ytdEl.textContent = `📆 YTD: ${ytd} day${ytd === 1 ? "" : "s"}`;
+    saunaYtdEl.textContent = `🔥 Sauna YTD: ${saunaCount}`;
+    coldYtdEl.textContent = `🧊 Cold Plunge YTD: ${coldCount}`;
   }
 
   function updateTodayForm() {
@@ -275,7 +284,7 @@ function gisLoaded() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: '', // will be set at request time
+    callback: '',
   });
   gisInited = true;
   maybeEnableExportButton();
