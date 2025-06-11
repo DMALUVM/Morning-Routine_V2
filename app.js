@@ -1,3 +1,13 @@
+const CLIENT_ID = '310678099655-asbf4ldapiqj7agr7i90vkaa5keqvm7h.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyCWwPIllw_q48zZ4D1CqhApZ9AjY2kfltk';
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+let backupFileId = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const calendarEl = document.getElementById("calendar");
   const monthYearEl = document.getElementById("monthYear");
@@ -8,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const editForm = document.getElementById("editForm");
   const todayForm = document.getElementById("todayForm");
   const cancelEdit = document.getElementById("cancelEdit");
+  const exportBtn = document.getElementById("exportDrive");
 
   let selectedDate = null;
   let currentDate = new Date();
@@ -64,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const key = getDateKey(date);
-
       const dayEl = document.createElement("div");
       dayEl.className = "calendar-day";
 
@@ -216,5 +226,63 @@ document.addEventListener("DOMContentLoaded", () => {
     renderCalendar();
   });
 
+  exportBtn.addEventListener("click", () => {
+    tokenClient.callback = async (resp) => {
+      if (resp.error !== undefined) throw resp;
+
+      const jsonData = JSON.stringify(data);
+      const file = new Blob([jsonData], { type: 'application/json' });
+      const metadata = {
+        name: 'routineData.json',
+        mimeType: 'application/json',
+      };
+
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: new Headers({ Authorization: 'Bearer ' + gapi.client.getToken().access_token }),
+        body: form,
+      });
+
+      const result = await res.json();
+      alert('✅ Backup complete to Google Drive!');
+      backupFileId = result.id;
+    };
+
+    tokenClient.requestAccessToken();
+  });
+
   renderCalendar();
 });
+
+function gapiLoaded() {
+  gapi.load('client', initializeGapiClient);
+}
+
+async function initializeGapiClient() {
+  await gapi.client.init({
+    apiKey: API_KEY,
+    discoveryDocs: [DISCOVERY_DOC],
+  });
+  gapiInited = true;
+  maybeEnableExportButton();
+}
+
+function gisLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: '', // will be set at request time
+  });
+  gisInited = true;
+  maybeEnableExportButton();
+}
+
+function maybeEnableExportButton() {
+  if (gapiInited && gisInited) {
+    document.getElementById("exportDrive").disabled = false;
+  }
+}
