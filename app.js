@@ -22,10 +22,11 @@ document.addEventListener("DOMContentLoaded", () => {
     supplements: "💊",
     sauna: "🔥",
     cold: "🧊",
+    trt: "💉"
   };
 
   const requiredKeys = ["breathwork", "hydration", "reading", "mobility", "exercise", "supplements"];
-  const optionalKeys = ["sauna", "cold"];
+  const optionalKeys = ["sauna", "cold", "trt"];
 
   function getLocalDate(date = new Date()) {
     return new Date(date.toLocaleString("en-US", { timeZone: "America/New_York" }));
@@ -42,15 +43,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const nowKey = getDateKey(now);
 
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const startDay = firstDay.getDay();
-    const daysInMonth = lastDay.getDate();
 
     calendarEl.innerHTML = "";
-
     ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(day => {
       const header = document.createElement("div");
-      header.className = "font-bold";
+      header.className = "font-bold text-xs";
       header.textContent = day;
       calendarEl.appendChild(header);
     });
@@ -60,11 +59,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let todayEl = null;
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d);
       const key = getDateKey(date);
-
+      const entry = data[key] || {};
       const dayEl = document.createElement("div");
       dayEl.className = "calendar-day";
 
@@ -73,126 +71,119 @@ document.addEventListener("DOMContentLoaded", () => {
         todayEl = dayEl;
       }
 
-      if (key > nowKey) {
-        dayEl.innerHTML = `
-          <div class="text-xs font-semibold">${day}</div>
-          <div class="status-icon">--</div>
-          <div class="badge-row"></div>
-        `;
-      } else {
-        const entry = data[key] || {};
-        const requiredComplete = requiredKeys.every(k => entry[k]);
-        const optionalCompleted = optionalKeys.filter(k => entry[k]).map(k => activities[k]);
-        const completed = requiredKeys.filter(k => entry[k]).length;
-        const progress = Math.round((completed / requiredKeys.length) * 100);
+      const dateNum = document.createElement("div");
+      dateNum.className = "text-xs font-semibold";
+      dateNum.textContent = d;
+      dayEl.appendChild(dateNum);
 
-        dayEl.classList.add(requiredComplete ? "complete" : "incomplete");
-        dayEl.innerHTML = `
-          <div class="text-xs font-semibold">${day}</div>
-          <div class="status-icon">${requiredComplete ? "✅" : "❌"}</div>
-          <div class="badge-row">${optionalCompleted.join(" ")}</div>
-          <div class="progress-bar" style="width:${progress}%"></div>
-        `;
-      }
+      const statusIcon = entry && requiredKeys.every(k => entry[k]) ? "✅" : "❌";
+      const iconEl = document.createElement("div");
+      iconEl.className = "status-icon";
+      iconEl.textContent = date > now ? "--" : statusIcon;
+      dayEl.appendChild(iconEl);
 
+      const badgeRow = document.createElement("div");
+      badgeRow.className = "badge-row";
+      optionalKeys.forEach(k => {
+        if (entry[k]) badgeRow.textContent += activities[k];
+      });
+      dayEl.appendChild(badgeRow);
+
+      /** Restore click/edit logic */
       dayEl.addEventListener("click", () => openEditModal(key));
       calendarEl.appendChild(dayEl);
     }
 
     if (todayEl) {
-      setTimeout(() => {
-        todayEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 100);
+      setTimeout(() => todayEl.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     }
 
-    monthYearEl.textContent = `${firstDay.toLocaleString("default", { month: "long" })} ${year}`;
+    monthYearEl.textContent = firstDay.toLocaleString("default", { month: "long", year: "numeric" });
     updateStats();
     updateTodayForm();
   }
 
   function updateStats() {
-    let streak = 0;
-    let ytd = 0;
-    let current = getLocalDate();
+    let streak = 0, ytd = 0, saunaCount = 0, coldCount = 0, trtCount = 0;
+    const now = getLocalDate();
+    const thisYear = now.getFullYear();
 
+    // Compute streak
+    let cur = new Date(now);
     while (true) {
-      const key = getDateKey(current);
+      const key = getDateKey(cur);
       const entry = data[key];
-      const ok = entry && requiredKeys.every(k => entry[k]);
-      if (ok) {
+      if (entry && requiredKeys.every(k => entry[k])) {
         streak++;
-        current.setDate(current.getDate() - 1);
+        cur.setDate(cur.getDate() - 1);
       } else {
         break;
       }
     }
 
+    // Yearly totals
     for (const [key, entry] of Object.entries(data)) {
-      if (key.startsWith(getLocalDate().getFullYear().toString()) && requiredKeys.every(k => entry[k])) {
-        ytd++;
+      if (key.startsWith(thisYear)) {
+        if (requiredKeys.every(k => entry[k])) ytd++;
+        if (entry.sauna) saunaCount++;
+        if (entry.cold) coldCount++;
+        if (entry.trt) trtCount++;
       }
     }
 
-    streakEl.textContent = `🔥 Streak: ${streak} day${streak === 1 ? "" : "s"}`;
-    ytdEl.textContent = `📆 YTD: ${ytd} day${ytd === 1 ? "" : "s"}`;
+    streakEl.textContent = `🔥 Streak: ${streak} day${streak !== 1 ? "s" : ""}`;
+    ytdEl.textContent = `📆 YTD: ${ytd} day${ytd !== 1 ? "s" : ""}`;
+    saunaYtdEl.textContent = `🔥 Sauna YTD: ${saunaCount}`;
+    coldYtdEl.textContent = `🧊 Cold YTD: ${coldCount}`;
+    // Add TRT stats:
+    const trtEl = document.getElementById("trtYTD") || createTRTElement();
+    trtEl.textContent = `💉 TRT YTD: ${trtCount}`;
+  }
+
+  function createTRTElement() {
+    const div = document.createElement("p");
+    div.id = "trtYTD";
+    div.className = "text-sm";
+    document.querySelector(".flex > div").appendChild(div);
+    return div;
   }
 
   function updateTodayForm() {
-    const todayKey = getDateKey(getLocalDate());
-    const lastCheckedKey = localStorage.getItem("lastCheckedDate") || "";
-
-    if (lastCheckedKey !== todayKey) {
-      for (const el of todayForm.elements) {
-        if (el.type === "checkbox") el.checked = false;
-      }
-      localStorage.setItem("lastCheckedDate", todayKey);
-    } else {
-      const entry = data[todayKey] || {};
-      for (const el of todayForm.elements) {
-        if (el.type === "checkbox") {
-          el.checked = !!entry[el.name];
-        }
-      }
+    const todayKey = getDateKey();
+    const entry = data[todayKey] || {};
+    for (const el of todayForm.elements) {
+      if (el.name) el.checked = !!entry[el.name];
     }
   }
 
-  todayForm.addEventListener("submit", (e) => {
+  todayForm.addEventListener("submit", e => {
     e.preventDefault();
-    const formData = new FormData(todayForm);
-    const result = {};
+    const formData = new FormData(todayForm), result = {};
     for (const key of Object.keys(activities)) {
       result[key] = formData.get(key) === "on";
     }
-
-    const todayKey = getDateKey(getLocalDate());
+    const todayKey = getDateKey();
     data[todayKey] = result;
     localStorage.setItem("routineData", JSON.stringify(data));
-    localStorage.setItem("lastCheckedDate", todayKey);
     renderCalendar();
   });
 
   function openEditModal(dateKey) {
     selectedDate = dateKey;
     const entry = data[dateKey] || {};
-
     for (const el of editForm.elements) {
-      if (el.type === "checkbox") {
-        el.checked = !!entry[el.name];
-      }
+      if (el.name) el.checked = !!entry[el.name];
     }
-
     editModal.classList.add("show");
     editModal.classList.remove("hidden");
   }
 
-  editForm.addEventListener("submit", (e) => {
+  editForm.addEventListener("submit", e => {
     e.preventDefault();
-    const formData = new FormData(editForm);
-    const result = {};
+    const formData = new FormData(editForm), result = {};
     for (const key of Object.keys(activities)) {
       result[key] = formData.get(key) === "on";
     }
-
     data[selectedDate] = result;
     localStorage.setItem("routineData", JSON.stringify(data));
     closeModal();
@@ -200,7 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   cancelEdit.addEventListener("click", closeModal);
-
   function closeModal() {
     editModal.classList.remove("show");
     editModal.classList.add("hidden");
