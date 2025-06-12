@@ -80,12 +80,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const status = document.createElement("div");
       status.className = "status-icon";
+
       if (date > now) {
         status.textContent = "--";
       } else {
         const ok = requiredKeys.every(k => entry[k]);
         status.textContent = ok ? "✅" : "❌";
+        dayEl.classList.add(ok ? "complete" : "incomplete");
       }
+
       dayEl.appendChild(status);
 
       const badges = document.createElement("div");
@@ -193,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar();
   });
+
   document.getElementById("nextMonth").addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() + 1);
     renderCalendar();
