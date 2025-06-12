@@ -3,13 +3,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const monthYearEl = document.getElementById("monthYear");
   const streakEl = document.getElementById("streak");
   const ytdEl = document.getElementById("ytd");
+  const saunaYtdEl = document.getElementById("saunaYTD");
+  const coldYtdEl = document.getElementById("coldYTD");
+  const trtYtdEl = document.getElementById("trtYTD");
 
   const editModal = document.getElementById("editModal");
   const editForm = document.getElementById("editForm");
   const todayForm = document.getElementById("todayForm");
   const cancelEdit = document.getElementById("cancelEdit");
 
-  let selectedDate = null;
   let currentDate = new Date();
   let data = JSON.parse(localStorage.getItem("routineData") || "{}");
 
@@ -28,30 +30,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const requiredKeys = ["breathwork", "hydration", "reading", "mobility", "exercise", "supplements"];
   const optionalKeys = ["sauna", "cold", "trt"];
 
-  function getLocalDate(date = new Date()) {
-    return new Date(date.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  function getLocalDate(d = new Date()) {
+    return new Date(d.toLocaleString("en-US", { timeZone: "America/New_York" }));
   }
 
-  function getDateKey(date) {
-    return getLocalDate(date).toISOString().split("T")[0];
+  function getDateKey(d = new Date()) {
+    return getLocalDate(d).toISOString().split("T")[0];
   }
 
   function renderCalendar() {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+    calendarEl.innerHTML = "";
     const now = getLocalDate();
     const nowKey = getDateKey(now);
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
     const firstDay = new Date(year, month, 1);
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const startDay = firstDay.getDay();
 
-    calendarEl.innerHTML = "";
     ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(day => {
-      const header = document.createElement("div");
-      header.className = "font-bold text-xs";
-      header.textContent = day;
-      calendarEl.appendChild(header);
+      const h = document.createElement("div");
+      h.className = "font-bold text-xs";
+      h.textContent = day;
+      calendarEl.appendChild(h);
     });
 
     for (let i = 0; i < startDay; i++) {
@@ -71,25 +73,28 @@ document.addEventListener("DOMContentLoaded", () => {
         todayEl = dayEl;
       }
 
-      const dateNum = document.createElement("div");
-      dateNum.className = "text-xs font-semibold";
-      dateNum.textContent = d;
-      dayEl.appendChild(dateNum);
+      const num = document.createElement("div");
+      num.className = "text-xs font-semibold";
+      num.textContent = d;
+      dayEl.appendChild(num);
 
-      const statusIcon = entry && requiredKeys.every(k => entry[k]) ? "✅" : "❌";
-      const iconEl = document.createElement("div");
-      iconEl.className = "status-icon";
-      iconEl.textContent = date > now ? "--" : statusIcon;
-      dayEl.appendChild(iconEl);
+      const status = document.createElement("div");
+      status.className = "status-icon";
+      if (date > now) {
+        status.textContent = "--";
+      } else {
+        const ok = requiredKeys.every(k => entry[k]);
+        status.textContent = ok ? "✅" : "❌";
+      }
+      dayEl.appendChild(status);
 
-      const badgeRow = document.createElement("div");
-      badgeRow.className = "badge-row";
+      const badges = document.createElement("div");
+      badges.className = "badge-row";
       optionalKeys.forEach(k => {
-        if (entry[k]) badgeRow.textContent += activities[k];
+        if (entry[k]) badges.textContent += activities[k];
       });
-      dayEl.appendChild(badgeRow);
+      dayEl.appendChild(badges);
 
-      /** Restore click/edit logic */
       dayEl.addEventListener("click", () => openEditModal(key));
       calendarEl.appendChild(dayEl);
     }
@@ -104,11 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateStats() {
-    let streak = 0, ytd = 0, saunaCount = 0, coldCount = 0, trtCount = 0;
     const now = getLocalDate();
-    const thisYear = now.getFullYear();
+    const currentYear = now.getFullYear().toString();
 
-    // Compute streak
+    let streak = 0, ytd = 0, saunaCount = 0, coldCount = 0, trtCount = 0;
+
     let cur = new Date(now);
     while (true) {
       const key = getDateKey(cur);
@@ -116,41 +121,28 @@ document.addEventListener("DOMContentLoaded", () => {
       if (entry && requiredKeys.every(k => entry[k])) {
         streak++;
         cur.setDate(cur.getDate() - 1);
-      } else {
-        break;
-      }
+      } else break;
     }
 
-    // Yearly totals
-    for (const [key, entry] of Object.entries(data)) {
-      if (key.startsWith(thisYear)) {
+    Object.entries(data).forEach(([k, entry]) => {
+      if (k.startsWith(currentYear)) {
         if (requiredKeys.every(k => entry[k])) ytd++;
         if (entry.sauna) saunaCount++;
         if (entry.cold) coldCount++;
         if (entry.trt) trtCount++;
       }
-    }
+    });
 
     streakEl.textContent = `🔥 Streak: ${streak} day${streak !== 1 ? "s" : ""}`;
     ytdEl.textContent = `📆 YTD: ${ytd} day${ytd !== 1 ? "s" : ""}`;
     saunaYtdEl.textContent = `🔥 Sauna YTD: ${saunaCount}`;
     coldYtdEl.textContent = `🧊 Cold YTD: ${coldCount}`;
-    // Add TRT stats:
-    const trtEl = document.getElementById("trtYTD") || createTRTElement();
-    trtEl.textContent = `💉 TRT YTD: ${trtCount}`;
-  }
-
-  function createTRTElement() {
-    const div = document.createElement("p");
-    div.id = "trtYTD";
-    div.className = "text-sm";
-    document.querySelector(".flex > div").appendChild(div);
-    return div;
+    trtYtdEl.textContent = `💉 TRT YTD: ${trtCount}`;
   }
 
   function updateTodayForm() {
-    const todayKey = getDateKey();
-    const entry = data[todayKey] || {};
+    const key = getDateKey();
+    const entry = data[key] || {};
     for (const el of todayForm.elements) {
       if (el.name) el.checked = !!entry[el.name];
     }
@@ -158,12 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   todayForm.addEventListener("submit", e => {
     e.preventDefault();
-    const formData = new FormData(todayForm), result = {};
-    for (const key of Object.keys(activities)) {
-      result[key] = formData.get(key) === "on";
-    }
-    const todayKey = getDateKey();
-    data[todayKey] = result;
+    const formData = new FormData(todayForm);
+    const result = {};
+    Object.keys(activities).forEach(k => {
+      result[k] = formData.get(k) === "on";
+    });
+    data[getDateKey()] = result;
     localStorage.setItem("routineData", JSON.stringify(data));
     renderCalendar();
   });
@@ -174,33 +166,33 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const el of editForm.elements) {
       if (el.name) el.checked = !!entry[el.name];
     }
-    editModal.classList.add("show");
     editModal.classList.remove("hidden");
+    editModal.classList.add("show");
   }
 
   editForm.addEventListener("submit", e => {
     e.preventDefault();
-    const formData = new FormData(editForm), result = {};
-    for (const key of Object.keys(activities)) {
-      result[key] = formData.get(key) === "on";
-    }
+    const formData = new FormData(editForm);
+    const result = {};
+    Object.keys(activities).forEach(k => {
+      result[k] = formData.get(k) === "on";
+    });
     data[selectedDate] = result;
     localStorage.setItem("routineData", JSON.stringify(data));
-    closeModal();
+    editModal.classList.remove("show");
+    editModal.classList.add("hidden");
     renderCalendar();
   });
 
-  cancelEdit.addEventListener("click", closeModal);
-  function closeModal() {
+  cancelEdit.addEventListener("click", () => {
     editModal.classList.remove("show");
     editModal.classList.add("hidden");
-  }
+  });
 
   document.getElementById("prevMonth").addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar();
   });
-
   document.getElementById("nextMonth").addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() + 1);
     renderCalendar();
