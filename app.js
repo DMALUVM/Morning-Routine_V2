@@ -24,11 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
     supplements: "💊",
     sauna: "🔥",
     cold: "🧊",
-    trt: "💉"
+    trt: "💉",
+    redlight: "🔴"
   };
 
   const requiredKeys = ["breathwork", "hydration", "reading", "mobility", "exercise", "supplements"];
-  const optionalKeys = ["sauna", "cold", "trt"];
+  const optionalKeys = ["sauna", "cold", "trt", "redlight"];
 
   function getLocalDate(d = new Date()) {
     return new Date(d.toLocaleString("en-US", { timeZone: "America/New_York" }));
@@ -49,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const startDay = firstDay.getDay();
 
-    ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(day => {
+    ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(day => {
       const h = document.createElement("div");
       h.className = "font-bold text-xs";
       h.textContent = day;
@@ -65,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const date = new Date(year, month, d);
       const key = getDateKey(date);
       const entry = data[key] || {};
+      const ok = requiredKeys.every(k => entry[k]);
       const dayEl = document.createElement("div");
       dayEl.className = "calendar-day";
 
@@ -80,15 +82,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const status = document.createElement("div");
       status.className = "status-icon";
-
       if (date > now) {
         status.textContent = "--";
       } else {
-        const ok = requiredKeys.every(k => entry[k]);
         status.textContent = ok ? "✅" : "❌";
         dayEl.classList.add(ok ? "complete" : "incomplete");
       }
-
       dayEl.appendChild(status);
 
       const badges = document.createElement("div");
@@ -153,11 +152,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   todayForm.addEventListener("submit", e => {
     e.preventDefault();
-    const formData = new FormData(todayForm);
-    const result = {};
-    Object.keys(activities).forEach(k => {
-      result[k] = formData.get(k) === "on";
-    });
+    const formData = new FormData(todayForm), result = {};
+    Object.keys(activities).forEach(k => result[k] = formData.get(k) === "on");
     data[getDateKey()] = result;
     localStorage.setItem("routineData", JSON.stringify(data));
     renderCalendar();
@@ -175,11 +171,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   editForm.addEventListener("submit", e => {
     e.preventDefault();
-    const formData = new FormData(editForm);
-    const result = {};
-    Object.keys(activities).forEach(k => {
-      result[k] = formData.get(k) === "on";
-    });
+    const formData = new FormData(editForm), result = {};
+    Object.keys(activities).forEach(k => result[k] = formData.get(k) === "on");
     data[selectedDate] = result;
     localStorage.setItem("routineData", JSON.stringify(data));
     editModal.classList.remove("show");
@@ -196,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar();
   });
-
   document.getElementById("nextMonth").addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() + 1);
     renderCalendar();
