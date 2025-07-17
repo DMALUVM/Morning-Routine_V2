@@ -96,13 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
     for (let i = 0; i < firstDay; i++) {
       const emptyDiv = document.createElement('div');
+      emptyDiv.classList.add('invisible');
       calendar.appendChild(emptyDiv);
     }
     const data = getData();
     let todayEl = null;
     for (let d = 1; d <= lastDate; d++) {
       const dayDiv = document.createElement('div');
-      dayDiv.classList.add('calendar-day');
+      dayDiv.classList.add('calendar-day', 'bg-white', 'dark:bg-gray-800');
       const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
       const dateStr = formatDate(date);
       if (dateStr === formatDate(currentDate)) {
@@ -132,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const ok = isCompleted(dayData);
       if (date > currentDate) {
         statusIcon.textContent = '--';
+        dayDiv.classList.remove('cursor-pointer');
         dayDiv.classList.add('opacity-50');
       } else {
         if (ok) {
@@ -139,13 +141,13 @@ document.addEventListener('DOMContentLoaded', () => {
           dayDiv.classList.add('complete');
         } else if (count === 0) {
           statusIcon.textContent = '❌';
-          dayDiv.classList.add('incomplete');
+          dayDiv.classList.add('incomplete', 'bg-red-100', 'dark:bg-red-900');
         } else {
           statusIcon.textContent = '📊';
         }
         if (count > 0) {
           const intensity = Math.min(5, Math.ceil((count / habits.length) * 5)) * 100;
-          dayDiv.classList.add(`bg-green-${intensity}`, 'dark:bg-green-${900 - intensity + 100} `);
+          dayDiv.classList.add(`bg-green-${intensity}`, 'dark:bg-green-${900 - intensity + 100}`);
           optionalHabits.forEach(h => {
             if (dayData[h]) {
               const emoji = document.createElement('span');
