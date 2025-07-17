@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('routineData', JSON.stringify(data));
   }
 
-  let currentDate = new Date();
+  let currentDate = new Date(2025, 6, 16); // Set to July 16, 2025 for testing
   let viewDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
 
   function formatDate(d) {
@@ -96,14 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
     for (let i = 0; i < firstDay; i++) {
       const emptyDiv = document.createElement('div');
-      emptyDiv.classList.add('invisible');
       calendar.appendChild(emptyDiv);
     }
     const data = getData();
     let todayEl = null;
     for (let d = 1; d <= lastDate; d++) {
       const dayDiv = document.createElement('div');
-      dayDiv.classList.add('calendar-day', 'bg-white', 'dark:bg-gray-800');
+      dayDiv.classList.add('calendar-day');
       const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
       const dateStr = formatDate(date);
       if (dateStr === formatDate(currentDate)) {
@@ -121,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
       badgeRow.classList.add('badge-row');
       dayDiv.appendChild(badgeRow);
       const progressContainer = document.createElement('div');
-      progressContainer.classList.add('w-full', 'bg-gray-200', 'dark:bg-gray-700', 'h-1', 'rounded');
+      progressContainer.classList.add('w-full', 'bg-gray-200', 'dark:bg-gray-700', 'h-1.5', 'rounded');
       const progressBar = document.createElement('div');
       progressBar.classList.add('progress-bar', 'h-full', 'rounded');
       progressContainer.appendChild(progressBar);
@@ -141,22 +140,19 @@ document.addEventListener('DOMContentLoaded', () => {
           dayDiv.classList.add('complete');
         } else if (count === 0) {
           statusIcon.textContent = '❌';
-          dayDiv.classList.add('incomplete', 'bg-red-100', 'dark:bg-red-900');
+          dayDiv.classList.add('incomplete');
         } else {
           statusIcon.textContent = '📊';
+          dayDiv.classList.add('partial');
         }
-        if (count > 0) {
-          const intensity = Math.min(5, Math.ceil((count / habits.length) * 5)) * 100;
-          dayDiv.classList.add(`bg-green-${intensity}`, 'dark:bg-green-${900 - intensity + 100}`);
-          optionalHabits.forEach(h => {
-            if (dayData[h]) {
-              const emoji = document.createElement('span');
-              emoji.textContent = habitEmojis[h];
-              emoji.title = capitalize(h);
-              badgeRow.appendChild(emoji);
-            }
-          });
-        }
+        optionalHabits.forEach(h => {
+          if (dayData[h]) {
+            const emoji = document.createElement('span');
+            emoji.textContent = habitEmojis[h];
+            emoji.title = capitalize(h);
+            badgeRow.appendChild(emoji);
+          }
+        });
         dayDiv.addEventListener('click', () => openEditModal(dateStr));
       }
       calendar.appendChild(dayDiv);
