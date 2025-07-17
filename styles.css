@@ -9,7 +9,7 @@ body {
 #calendar {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 8px;
   margin-top: 1rem;
 }
 
@@ -26,6 +26,7 @@ body {
   position: relative;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.2s;
+  background-color: #ffffff;
 }
 
 .calendar-day:hover {
@@ -50,7 +51,7 @@ body {
   margin-top: auto;
 }
 
-/* Completed/incomplete coloring */
+/* Completed/incomplete/partial coloring */
 .complete {
   background-color: #dcfce7;
   color: #166534;
@@ -59,6 +60,11 @@ body {
 .incomplete {
   background-color: #fee2e2;
   color: #991b1b;
+}
+
+.partial {
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
 /* Highlight today's cell */
@@ -76,6 +82,7 @@ body {
   background-color: #3b82f6;
   border-radius: 3px;
   margin-top: 4px;
+  transition: width 0.3s ease;
 }
 
 /* Strike-through for completed */
@@ -87,7 +94,7 @@ input[type="checkbox"]:checked + span {
 /* Responsive tweaks */
 @media (max-width: 768px) {
   #calendar {
-    grid-template-columns: repeat(7, 1fr); /* Keep 7 columns but allow smaller cells */
+    gap: 4px;
   }
 
   .calendar-day {
@@ -103,10 +110,6 @@ input[type="checkbox"]:checked + span {
 }
 
 @media (max-width: 480px) {
-  #calendar {
-    grid-template-columns: repeat(7, 1fr);
-  }
-
   .calendar-day {
     min-height: 60px;
     padding: 0.2rem;
@@ -125,6 +128,7 @@ input[type="checkbox"]:checked + span {
 /* Dark mode support */
 html.dark .calendar-day {
   border-color: #374151;
+  background-color: #1f2937;
 }
 
 html.dark .calendar-day:hover {
@@ -139,6 +143,11 @@ html.dark .complete {
 html.dark .incomplete {
   background-color: #7f1d1d;
   color: #fecaca;
+}
+
+html.dark .partial {
+  background-color: #713f12;
+  color: #fde68a;
 }
 
 html.dark .today {
