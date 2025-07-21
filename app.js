@@ -1,12 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const habits = ['breathwork', 'hydration', 'reading', 'mobility', 'exercise', 'supplements', 'sauna', 'cold', 'trt', 'redlight'];
-  const coreHabits = ['breathwork', 'hydration', 'reading', 'mobility', 'exercise', 'supplements'];
-  const optionalHabits = ['sauna', 'cold', 'trt', 'redlight'];
+  const habits = ['breathwork', 'hydration', 'reading', 'exercise', 'supplements', 'sauna', 'cold', 'trt', 'redlight'];
+  const coreHabits = ['breathwork', 'hydration', 'reading', 'exercise', 'supplements'];
+  const optionalHabits = ['sauna', 'cold', 'redlight'];
   const habitEmojis = {
     breathwork: '🧘',
     hydration: '💧',
     reading: '📖',
-    mobility: '🤸',
     exercise: '🏋️',
     supplements: '💊',
     sauna: '🔥',
@@ -23,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('routineData', JSON.stringify(data));
   }
 
-  let currentDate = new Date(2025, 6, 16); // Set to July 16, 2025 for testing
+  let currentDate = new Date(); // Use actual current date
   let viewDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
 
   function formatDate(d) {
@@ -31,6 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  function isTRTDay(date) {
+    const day = date.getDay();
+    return day === 1 || day === 4; // Monday or Thursday
   }
 
   function isCompleted(dayData) {
@@ -79,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('saunaYTD').textContent = `🔥 Sauna YTD: ${counts.sauna}`;
     document.getElementById('coldYTD').textContent = `🧊 Cold YTD: ${counts.cold}`;
     document.getElementById('trtYTD').textContent = `💉 TRT YTD: ${counts.trt}`;
+    document.getElementById('redlightYTD').textContent = `🔴 Red Light YTD: ${counts.redlight}`;
     return { streak, ytd, counts };
   }
 
@@ -118,6 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
       dayDiv.appendChild(statusIcon);
       const badgeRow = document.createElement('div');
       badgeRow.classList.add('badge-row');
+      if (isTRTDay(date)) {
+        const trtIcon = document.createElement('span');
+        trtIcon.textContent = '💉';
+        trtIcon.title = 'TRT Day';
+        badgeRow.appendChild(trtIcon);
+      }
       dayDiv.appendChild(badgeRow);
       const progressContainer = document.createElement('div');
       progressContainer.classList.add('w-full', 'bg-gray-200', 'dark:bg-gray-700', 'h-1.5', 'rounded');
@@ -126,8 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
       progressContainer.appendChild(progressBar);
       dayDiv.appendChild(progressContainer);
       const dayData = data[dateStr] || {};
-      const count = habits.reduce((acc, h) => acc + (dayData[h] ? 1 : 0), 0);
-      const percent = (count / habits.length) * 100;
+      const count = coreHabits.reduce((acc, h) => acc + (dayData[h] ? 1 : 0), 0);
+      const percent = (count / coreHabits.length) * 100;
       progressBar.style.width = `${percent}%`;
       const ok = isCompleted(dayData);
       if (date > currentDate) {
@@ -153,7 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
             badgeRow.appendChild(emoji);
           }
         });
-        dayDiv.addEventListener('click', () => openEditModal(dateStr));
+        if (dayData.trt && isTRTDay(date)) {
+          const emoji = document.createElement('span');
+          emoji.textContent = habitEmojis.trt;
+          emoji.title = 'TRT Injection';
+          badgeRow.appendChild(emoji);
+        }
+        dayDiv.addEventListener('click', () => openEditModal(dateStr, date));
       }
       calendar.appendChild(dayDiv);
     }
@@ -171,25 +188,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = getData();
     const dayData = data[formatDate(currentDate)] || {};
     habits.forEach(h => {
-      document.querySelector(`#todayForm input[name="${h}"]`).checked = !!dayData[h];
+      const checkbox = document.querySelector(`#todayForm input[name="${h}"]`);
+      if (checkbox) {
+        checkbox.checked = !!dayData[h];
+      }
     });
+    const trtLabel = document.getElementById('trtLabel');
+    trtLabel.classList.toggle('hidden', !isTRTDay(currentDate));
     updateProgress();
   }
 
   function updateProgress() {
-    const checked = document.querySelectorAll('#todayForm input[type="checkbox"]:checked').length;
-    const percent = (checked / habits.length) * 100;
+    const checkboxes = document.querySelectorAll('#todayForm input[type="checkbox"]:not([name="trt"])');
+    const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const total = isTRTDay(currentDate) ? coreHabits.length + 1 : coreHabits.length;
+    const percent = (checked / total) * 100;
     document.getElementById('progressBar').style.width = `${percent}%`;
   }
 
   let editDate;
-  function openEditModal(dateStr) {
+  function openEditModal(dateStr, date) {
     editDate = dateStr;
     const data = getData();
     const dayData = data[dateStr] || {};
     habits.forEach(h => {
-      document.querySelector(`#editForm input[name="${h}"]`).checked = !!dayData[h];
+      const checkbox = document.querySelector(`#editForm input[name="${h}"]`);
+      if (checkbox) {
+        checkbox.checked = !!dayData[h];
+      }
     });
+    const trtLabel = document.getElementById('editTrtLabel');
+    trtLabel.classList.toggle('hidden', !isTRTDay(date));
     document.getElementById('editModal').classList.remove('hidden');
   }
 
@@ -244,14 +273,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   habits.forEach(h => {
     const checkbox = document.querySelector(`#todayForm input[name="${h}"]`);
-    checkbox.addEventListener('change', updateProgress);
+    if (checkbox) {
+      checkbox.addEventListener('change', updateProgress);
+    }
   });
 
   document.getElementById('todayForm').addEventListener('submit', e => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const dayData = {};
-    habits.forEach(h => dayData[h] = formData.get(h) === 'on');
+    habits.forEach(h => {
+      if (h !== 'trt' || isTRTDay(currentDate)) {
+        dayData[h] = formData.get(h) === 'on';
+      }
+    });
     const data = getData();
     data[formatDate(currentDate)] = dayData;
     saveData(data);
@@ -264,7 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const dayData = {};
-    habits.forEach(h => dayData[h] = formData.get(h) === 'on');
+    habits.forEach(h => {
+      if (h !== 'trt' || isTRTDay(new Date(editDate))) {
+        dayData[h] = formData.get(h) === 'on';
+      }
+    });
     const data = getData();
     data[editDate] = dayData;
     saveData(data);
