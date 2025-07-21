@@ -18,6 +18,7 @@
         <p id="saunaYTD" class="text-sm">🔥 Sauna YTD: 0</p>
         <p id="coldYTD" class="text-sm">🧊 Cold YTD: 0</p>
         <p id="trtYTD" class="text-sm">💉 TRT YTD: 0</p>
+        <p id="redlightYTD" class="text-sm">🔴 Red Light YTD: 0</p>
         <button id="viewStats" class="text-sm text-blue-500 hover:underline">View All Stats</button>
       </div>
       <div class="flex items-center space-x-4">
@@ -39,13 +40,12 @@
         <label class="flex items-center space-x-2"><input type="checkbox" name="breathwork"><span>🧘 Breathwork</span></label>
         <label class="flex items-center space-x-2"><input type="checkbox" name="hydration"><span>💧 Hydration</span></label>
         <label class="flex items-center space-x-2"><input type="checkbox" name="reading"><span>📖 Reading</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="mobility"><span>🤸 Mobility</span></label>
         <label class="flex items-center space-x-2"><input type="checkbox" name="exercise"><span>🏋️ Exercise</span></label>
         <label class="flex items-center space-x-2"><input type="checkbox" name="supplements"><span>💊 Supplements</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="sauna"><span>🔥 Sauna</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="cold"><span>🧊 Cold Plunge</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="trt"><span>💉 TRT Injection</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="redlight"><span>🔴 Red Light Therapy</span></label>
+        <label class="flex items-center space-x-2"><input type="checkbox" name="sauna"><span>🔥 Sauna (Optional)</span></label>
+        <label class="flex items-center space-x-2"><input type="checkbox" name="cold"><span>🧊 Cold Plunge (Optional)</span></label>
+        <label id="trtLabel" class="flex items-center space-x-2 hidden"><input type="checkbox" name="trt"><span>💉 TRT Injection</span></label>
+        <label class="flex items-center space-x-2"><input type="checkbox" name="redlight"><span>🔴 Red Light Therapy (Optional)</span></label>
         <div class="flex justify-end sm:col-span-2 mt-3">
           <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition">Save Today</button>
         </div>
@@ -64,13 +64,12 @@
         <label class="flex items-center space-x-2"><input type="checkbox" name="breathwork"><span>🧘 Breathwork</span></label>
         <label class="flex items-center space-x-2"><input type="checkbox" name="hydration"><span>💧 Hydration</span></label>
         <label class="flex items-center space-x-2"><input type="checkbox" name="reading"><span>📖 Reading</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="mobility"><span>🤸 Mobility</span></label>
         <label class="flex items-center space-x-2"><input type="checkbox" name="exercise"><span>🏋️ Exercise</span></label>
         <label class="flex items-center space-x-2"><input type="checkbox" name="supplements"><span>💊 Supplements</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="sauna"><span>🔥 Sauna</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="cold"><span>🧊 Cold Plunge</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="trt"><span>💉 TRT Injection</span></label>
-        <label class="flex items-center space-x-2"><input type="checkbox" name="redlight"><span>🔴 Red Light Therapy</span></label>
+        <label class="flex items-center space-x-2"><input type="checkbox" name="sauna"><span>🔥 Sauna (Optional)</span></label>
+        <label class="flex items-center space-x-2"><input type="checkbox" name="cold"><span>🧊 Cold Plunge (Optional)</span></label>
+        <label id="editTrtLabel" class="flex items-center space-x-2"><input type="checkbox" name="trt"><span>💉 TRT Injection</span></label>
+        <label class="flex items-center space-x-2"><input type="checkbox" name="redlight"><span>🔴 Red Light Therapy (Optional)</span></label>
         <div class="flex justify-between sm:col-span-2 mt-3">
           <button type="button" id="cancelEdit" class="text-sm text-gray-600 dark:text-gray-300 hover:underline">Cancel</button>
           <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition">Save</button>
@@ -87,16 +86,17 @@
         <p id="stats-breathwork"></p>
         <p id="stats-hydration"></p>
         <p id="stats-reading"></p>
-        <p id="stats-mobility"></p>
         <p id="stats-exercise"></p>
         <p id="stats-supplements"></p>
-        <p id="stats-sauna"></p>
+        <p id="stats
+
+-sauna"></p>
         <p id="stats-cold"></p>
         <p id="stats-trt"></p>
         <p id="stats-redlight"></p>
       </div>
       <div class="flex justify-center mt-3">
-        <button id="closeStats" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition">Close</button>
+        <button id="closeStats" class="bg-blue-500 text-white px-3 py-1 rounded text-sm personally hover:bg-blue-600 transition">Close</button>
       </div>
       <button id="clearData" class="text-red-500 text-sm mt-2 block mx-auto hover:underline">Clear All Data</button>
     </div>
